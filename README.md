@@ -4,15 +4,13 @@ last edit time: 2019/11/6
 
 author: g1n0st
 
-------
-##Basic purpose
+## Basic purpose
 
 A lite utility linear algebra math library including basic functionalities of Matrix and Vector and some simple math  algorithms. 
 
 As a component of AyaRay developed by [Chang Yu](http://g1n0st.xyz/). 
 
-------
-##Design Mode
+## Design Mode
 
 +  Adapt the architecture of `pbrt-v3`, ought to achieve all the functions existed in `pbrt-v3`'s `gemetry.h` in the same interface.
 
@@ -34,35 +32,20 @@ As a component of AyaRay developed by [Chang Yu](http://g1n0st.xyz/).
 
 + Follow Google code style
 
-------
-##File structure
+## File structure
 
 ~
 
-|-`constant.hpp`
+|-constant.hpp
 
-|
+|-ayamath.hpp
 
-|-`ayamath.hpp`
+|-vector.hpp
 
-|
+|-bbox.hpp
 
-|-`vector.hpp`
+|-ray.hpp
 
-|
+|-matrix.hpp
 
-|-`bbox.hpp`
-
-|
-
-|-`ray.hpp`
-
-|
-
-|-`matrix.hpp`
-
-|
-
-|-`transform.hpp`
-
-  # AyaMath
+|-transform.hpp
