@@ -12,6 +12,8 @@ As a component of AyaRay developed by [Chang Yu](http://g1n0st.xyz/).
 
 ## Design Mode
 
++ **Support `SIMD`  hardware acceleration (as a default mode).**
+
 +  Adapt the architecture of `pbrt-v3`, ought to achieve all the functions existed in `pbrt-v3`'s `gemetry.h` in the same interface.
 
 
@@ -21,10 +23,7 @@ As a component of AyaRay developed by [Chang Yu](http://g1n0st.xyz/).
 + Considering the encode demand of `SIMD` and the confusing error `LNK2019` caused by c++  template use. Only support `float` and `double` types by control of macro switch.
 
 
-+ Support `SIMD`  hardware acceleration (as a default mode).
-
-
-+ Support different platforms (Linux/Windows) 
++ Only support Windows(x86) platform currently.
 
 
 + Guarantee multi-thread safety.
