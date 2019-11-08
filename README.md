@@ -1,10 +1,10 @@
 # AyaMath Development document
 
-last edit time: 2019/11/6 
+last edit time: 2019/11/8
 
 author: g1n0st
 
-## Basic purpose
+## Basic Target
 
 A lite utility linear algebra math library including basic functionalities of Matrix and Vector and some simple math  algorithms. 
 
@@ -31,20 +31,20 @@ As a component of AyaRay developed by [Chang Yu](http://g1n0st.xyz/).
 
 + Follow Google code style
 
-## File structure
+## File Structure
 
 ~
 
-|-constant.hpp
+|-Constant.hpp
 
-|-ayamath.hpp
+|-MathUtility.hpp
 
-|-vector.hpp
+|-Vector3.hpp
 
-|-bbox.hpp
+|-BBox.hpp
 
-|-ray.hpp
+|-Ray.hpp
 
-|-matrix.hpp
+|-Matrix4x4.hpp
 
-|-transform.hpp
+|-Transform.hpp

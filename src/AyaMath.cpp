@@ -14,6 +14,12 @@ Vector3 x(9, 53, 13), y(7, 23, 19);
 #if defined(TEST_TIME_SPEED)
 Vector3 a[30000000], b[30000000], c[30000000];
 #endif
+void Test(Vector3 a) {
+	cout << "hahaha" << endl;
+}
+void Test(Point3 a) {
+	cout << "point !" << endl;
+}
 int main()
 {
 #ifdef TEST_TIME_SPEED
@@ -34,7 +40,9 @@ int main()
 	std::cout << ed - st << std::endl;
 #else
 	Vector3 a(1, 0, 0);
-	Normal3 b(0, 0, 1);
+	Point3 b(0, 0, 1);
+	Test(a);
+	Test(b);
 	cout << a.rotate(b, 3.14159265357f / 1) << endl;
 #endif
 	return 0;
