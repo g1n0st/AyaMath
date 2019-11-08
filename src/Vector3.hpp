@@ -3,11 +3,13 @@
 
 #include "MathUtility.hpp"
 
+#if defined(AYA_USE_SIMD)
 #define SHUFFLE(x, y, z, w) (((w) << 6 | (z) << 4 | (y) << 2 | (x)) & 0xff)
 #define pshufd_ps(_a, _mask) _mm_shuffle_ps((_a), (_a), (_mask))
 #define splat_ps(_a, _i) pshufd_ps((_a), SHUFFLE(_i, _i, _i, _i))
 #define vFFF0Mask (_mm_set_epi32(0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF))
 #define vFFF0fMask _mm_castsi128_ps(vFFF0Mask)
+#endif
 
 namespace Aya {
 	__declspec(align(16)) class BaseVector3 {
@@ -66,7 +68,7 @@ namespace Aya {
 			return *this;
 		}
 #endif
-		__forceinline void SetValue(const float &x, const float &y, const float &z) {
+		__forceinline void setValue(const float &x, const float &y, const float &z) {
 			m_val[0] = x;
 			m_val[1] = y;
 			m_val[2] = z;
@@ -283,7 +285,7 @@ namespace Aya {
 				return *this /= l2;
 			}
 			else {
-				SetValue(1, 0, 0);
+				setValue(1, 0, 0);
 			}
 			return *this;
 		}
