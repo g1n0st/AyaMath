@@ -12,9 +12,18 @@
 #include <intrin.h>
 #endif
 
-//#define AYA_USE_SIMD
+#define AYA_USE_SIMD
 #define AYA_USE_SQRT_APPROXIMATION
+
 #define SIMD_EPSILON FLT_EPSILON
+
+#define AYA_SCALAR_OUTPUT_APPROXIMATION
+#if defined(AYA_SCALAR_OUTPUT_APPROXIMATION)
+#define AYA_SCALAR_OUTPUT(x) (std::abs(x) < SIMD_EPSILON ? 0 : (x))
+#else
+#define AYA_SCALAR_OUTPUT(x) (x)
+#endif
+
 
 #define v1_5 (_mm_set_ps(1.5f, 1.5f, 1.5f, 1.5f))
 #define v_0_5 (_mm_set_ps(-0.5f, -0.5f, -0.5f, -0.5f))

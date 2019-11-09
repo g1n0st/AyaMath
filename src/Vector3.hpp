@@ -4,13 +4,23 @@
 #include "MathUtility.hpp"
 
 #if defined(AYA_USE_SIMD)
-#define SHUFFLE(x, y, z, w) (((w) << 6 | (z) << 4 | (y) << 2 | (x)) & 0xff)
-#define pshufd_ps(_a, _mask) _mm_shuffle_ps((_a), (_a), (_mask))
-#define splat_ps(_a, _i) pshufd_ps((_a), SHUFFLE(_i, _i, _i, _i))
+/* expands to the following value */
+#define _MM_SHUFFLE(x, y, z, w) (((w) << 6 | (z) << 4 | (y) << 2 | (x)) & 0xff)
+
+#define _mm_pshufd_ps(_a, _mask) _mm_shuffle_ps((_a), (_a), (_mask))
+#define _mm_splat_ps(_a, _i) _mm_pshufd_ps((_a), _MM_SHUFFLE(_i, _i, _i, _i))
+#define _mm_splat3_ps(_a, _i) _mm_pshufd_ps((_a), _MM_SHUFFLE(_i, _i, _i, 3))
+
 #define vFFF0Mask (_mm_set_epi32(0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF))
 #define vFFF0fMask _mm_castsi128_ps(vFFF0Mask)
-#define splat3_ps(_a, _i) pshufd_ps((_a), SHUFFLE(_i, _i, _i, 3))
-#define splat_ps(_a, _i) pshufd_ps((_a), SHUFFLE(_i, _i, _i, _i))
+
+#define v3AbsiMask (_mm_set_epi32(0x00000000, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF))
+#define vAbsMask (_mm_set_epi32(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF))
+#define vFFF0Mask (_mm_set_epi32(0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF))
+
+#define vxyzMaskf vFFF0fMask
+#define vAbsfMask _mm_castsi128_ps(vAbsMask)
+
 #endif
 
 namespace Aya {
@@ -185,7 +195,7 @@ namespace Aya {
 		__forceinline BaseVector3 operator * (const float &s) const {
 #if defined(AYA_USE_SIMD)
 			__m128 vs = _mm_load_ss(&s);
-			vs = pshufd_ps(vs, 0x80);
+			vs = _mm_pshufd_ps(vs, 0x80);
 			return BaseVector3(_mm_mul_ps(m_val128, vs));
 #else
 			return BaseVector3(m_val[0] * s,
@@ -200,7 +210,7 @@ namespace Aya {
 		__forceinline BaseVector3 & operator *= (const float &s) {
 #if defined(AYA_USE_SIMD)
 			__m128 vs = _mm_load_ss(&s);
-			vs = pshufd_ps(vs, 0x80);
+			vs = _mm_pshufd_ps(vs, 0x80);
 			m_val128 = _mm_mul_ps(m_val128, vs);
 #else
 			m_val[0] *= s;
@@ -234,7 +244,7 @@ namespace Aya {
 #if defined(AYA_USE_SIMD)
 			__m128 vd = _mm_mul_ps(m_val128, v.m_val128);
 			__m128 z = _mm_movehl_ps(vd, vd);
-			__m128 y = pshufd_ps(vd, 0x55);
+			__m128 y = _mm_pshufd_ps(vd, 0x55);
 			vd = _mm_add_ss(vd, y);
 			vd = _mm_add_ss(vd, z);
 			return _mm_cvtss_f32(vd);
@@ -261,7 +271,7 @@ namespace Aya {
 #if defined(AYA_USE_SIMD)
 			__m128 vd = _mm_mul_ps(m_val128, m_val128);
 			__m128 z = _mm_movehl_ps(vd, vd);
-			__m128 y = pshufd_ps(vd, 0x55);
+			__m128 y = _mm_pshufd_ps(vd, 0x55);
 			vd = _mm_add_ss(vd, y);
 			vd = _mm_add_ss(vd, z);
 
@@ -273,7 +283,7 @@ namespace Aya {
 			z = _mm_sub_ss(z, vd);
 			y = _mm_mul_ss(y, z);
 			
-			y = splat_ps(y, 0x80);
+			y = _mm_splat_ps(y, 0x80);
 			m_val128 = _mm_mul_ps(m_val128, y);
 
 			return *this;
@@ -296,14 +306,14 @@ namespace Aya {
 #if defined(AYA_USE_SIMD)
 			__m128 T, V;
 
-			T = pshufd_ps(m_val128, SHUFFLE(1, 2, 0, 3)); //			(Y Z X 0)
-			V = pshufd_ps(v.m_val128, SHUFFLE(1, 2, 0, 3)); //		(Y Z X 0)
+			T = _mm_pshufd_ps(m_val128, _MM_SHUFFLE(1, 2, 0, 3)); //			(Y Z X 0)
+			V = _mm_pshufd_ps(v.m_val128, _MM_SHUFFLE(1, 2, 0, 3)); //		(Y Z X 0)
 
 			V = _mm_mul_ps(V, m_val128);
 			T = _mm_mul_ps(T, v.m_val128);
 			V = _mm_sub_ps(V, T);
 
-			V = pshufd_ps(V, SHUFFLE(1, 2, 0, 3));
+			V = _mm_pshufd_ps(V, _MM_SHUFFLE(1, 2, 0, 3));
 			return BaseVector3(V);
 #else
 			return BaseVector3(
@@ -329,12 +339,12 @@ namespace Aya {
 			__m128 vsin = _mm_load_ss(&ssin); // (S 0 0 0)
 			__m128 vcos = _mm_load_ss(&scos); // (S 0 0 0)
 
-			__m128 Y = pshufd_ps(O, 0xC9);    // (Y Z X 0)
-			__m128 Z = pshufd_ps(O, 0xD2);    // (Z X Y 0)
+			__m128 Y = _mm_pshufd_ps(O, 0xC9);    // (Y Z X 0)
+			__m128 Z = _mm_pshufd_ps(O, 0xD2);    // (Z X Y 0)
 			O = _mm_add_ps(O, Y);
-			vsin = pshufd_ps(vsin, 0x80);     // (S S S 0)
+			vsin = _mm_pshufd_ps(vsin, 0x80);     // (S S S 0)
 			O = _mm_add_ps(O, Z);
-			vcos = pshufd_ps(vcos, 0x80);     // (S S S 0)
+			vcos = _mm_pshufd_ps(vcos, 0x80);     // (S S S 0)
 
 			vsin = _mm_mul_ps(vsin, C);
 			O = _mm_mul_ps(O, axis.m_val128);
@@ -355,7 +365,10 @@ namespace Aya {
 		}
 
 		friend inline std::ostream &operator<<(std::ostream &os, const BaseVector3 &v) {
-			os << "[ " << v.m_val[0] << ", " << v.m_val[1] << ", " << v.m_val[2] << " ]";
+			os << "[ "  << AYA_SCALAR_OUTPUT(v.m_val[0])
+				<< ", " << AYA_SCALAR_OUTPUT(v.m_val[1])
+				<< ", " << AYA_SCALAR_OUTPUT(v.m_val[2])
+				<< " ]";
 			return os;
 		}
 	};

@@ -121,8 +121,8 @@ namespace Aya {
 			vT = _mm_unpackhi_ps(v0, v1); // z0 z1 * *
 			v0 = _mm_unpacklo_ps(v0, v1); // x0 x1 y0 y1
 
-			v1 = _mm_shuffle_ps(v0, v2, SHUFFLE(2, 3, 1, 3));						// y0 y1 y2 0
-			v0 = _mm_shuffle_ps(v0, v2, SHUFFLE(0, 1, 0, 3));						// x0 x1 x2 0
+			v1 = _mm_shuffle_ps(v0, v2, _MM_SHUFFLE(2, 3, 1, 3));						// y0 y1 y2 0
+			v0 = _mm_shuffle_ps(v0, v2, _MM_SHUFFLE(0, 1, 0, 3));						// x0 x1 x2 0
 			v2 = _mm_castpd_ps(_mm_move_sd(_mm_castps_pd(v2), _mm_castps_pd(vT)));  // z0 z1 z2 0
 
 			vm[0] = v0;
@@ -141,6 +141,15 @@ namespace Aya {
 			m[9] = m_el[1].z();
 			m[10] = m_el[2].z();
 			m[11] = 0.f;
+#endif
+		}
+		Matrix3x3 getIdentity() {
+#if defined(AYA_USE_SIMD)
+			return Matrix3x3(v1000, v0100, v0010);
+#else
+			return Matrix3x3(1, 0, 0,
+				0, 1, 0,
+				0, 0, 1);
 #endif
 		}
 
@@ -228,7 +237,7 @@ namespace Aya {
 		}
 		__forceinline Matrix3x3 operator * (const float &s) const {
 #if defined(AYA_USE_SIMD)
-			__m128 vk = splat_ps(_mm_load_ss((float*)&s), 0x80);
+			__m128 vk = _mm_splat_ps(_mm_load_ss((float*)&s), 0x80);
 			return Matrix3x3(_mm_mul_ps(m_el[0].m_val128, vk),
 				_mm_mul_ps(m_el[1].m_val128, vk),
 				_mm_mul_ps(m_el[2].m_val128, vk));
@@ -250,7 +259,7 @@ namespace Aya {
 		}
 		__forceinline Matrix3x3& operator *= (const float &s) {
 #if defined(AYA_USE_SIMD)
-			__m128 vk = splat_ps(_mm_load_ss((float*)&s), 0x80);
+			__m128 vk = _mm_splat_ps(_mm_load_ss((float*)&s), 0x80);
 			m_el[0].m_val128 = _mm_mul_ps(m_el[0].m_val128, vk);
 			m_el[1].m_val128 = _mm_mul_ps(m_el[1].m_val128, vk);
 			m_el[2].m_val128 = _mm_mul_ps(m_el[2].m_val128, vk);
@@ -288,9 +297,9 @@ namespace Aya {
 
 			__m128 m2v = _mm_and_ps(m[0].m_val128, vFFF0fMask);
 
-			__m128 c0 = splat_ps(m10, 0);
-			__m128 c1 = splat_ps(m11, 0);
-			__m128 c2 = splat_ps(m12, 0);
+			__m128 c0 = _mm_splat_ps(m10, 0);
+			__m128 c1 = _mm_splat_ps(m11, 0);
+			__m128 c2 = _mm_splat_ps(m12, 0);
 
 			c0 = _mm_mul_ps(c0, m2v);
 			c1 = _mm_mul_ps(c1, m2v);
@@ -298,9 +307,9 @@ namespace Aya {
 
 			m2v = _mm_and_ps(m[1].m_val128, vFFF0fMask);
 
-			__m128 c0_1 = splat_ps(m10, 1);
-			__m128 c1_1 = splat_ps(m11, 1);
-			__m128 c2_1 = splat_ps(m12, 1);
+			__m128 c0_1 = _mm_splat_ps(m10, 1);
+			__m128 c1_1 = _mm_splat_ps(m11, 1);
+			__m128 c2_1 = _mm_splat_ps(m12, 1);
 
 			c0_1 = _mm_mul_ps(c0_1, m2v);
 			c1_1 = _mm_mul_ps(c1_1, m2v);
@@ -312,9 +321,9 @@ namespace Aya {
 			c1 = _mm_add_ps(c1, c1_1);
 			c2 = _mm_add_ps(c2, c2_1);
 
-			m10 = splat_ps(m10, 2);
-			m11 = splat_ps(m11, 2);
-			m12 = splat_ps(m12, 2);
+			m10 = _mm_splat_ps(m10, 2);
+			m11 = _mm_splat_ps(m11, 2);
+			m12 = _mm_splat_ps(m12, 2);
 
 			m10 = _mm_mul_ps(m10, m2v);
 			m11 = _mm_mul_ps(m11, m2v);
@@ -348,27 +357,27 @@ namespace Aya {
 			mv2 = _mm_and_ps(m[2].m_val128, vFFF0fMask);
 
 			// rv0
-			rv00 = splat_ps(rv02, 0);
-			rv01 = splat_ps(rv02, 1);
-			rv02 = splat_ps(rv02, 2);
+			rv00 = _mm_splat_ps(rv02, 0);
+			rv01 = _mm_splat_ps(rv02, 1);
+			rv02 = _mm_splat_ps(rv02, 2);
 
 			rv00 = _mm_mul_ps(rv00, mv0);
 			rv01 = _mm_mul_ps(rv01, mv1);
 			rv02 = _mm_mul_ps(rv02, mv2);
 
 			// rv1
-			rv10 = splat_ps(rv12, 0);
-			rv11 = splat_ps(rv12, 1);
-			rv12 = splat_ps(rv12, 2);
+			rv10 = _mm_splat_ps(rv12, 0);
+			rv11 = _mm_splat_ps(rv12, 1);
+			rv12 = _mm_splat_ps(rv12, 2);
 
 			rv10 = _mm_mul_ps(rv10, mv0);
 			rv11 = _mm_mul_ps(rv11, mv1);
 			rv12 = _mm_mul_ps(rv12, mv2);
 
 			// rv2
-			rv20 = splat_ps(rv22, 0);
-			rv21 = splat_ps(rv22, 1);
-			rv22 = splat_ps(rv22, 2);
+			rv20 = _mm_splat_ps(rv22, 0);
+			rv21 = _mm_splat_ps(rv22, 1);
+			rv22 = _mm_splat_ps(rv22, 2);
 
 			rv20 = _mm_mul_ps(rv20, mv0);
 			rv21 = _mm_mul_ps(rv21, mv1);
@@ -388,6 +397,78 @@ namespace Aya {
 				m.tdotx(m_el[2]), m.tdoty(m_el[2]), m.tdotz(m_el[2]));
 #endif
 			return *this;
+		}
+
+		__forceinline Matrix3x3 transpose() const {
+#if defined(AYA_USE_SIMD)
+			__m128 v0 = m_el[0].m_val128;
+			__m128 v1 = m_el[1].m_val128;
+			__m128 v2 = m_el[2].m_val128; // x2 y2 z2 w2
+			__m128 vT;
+
+			v2 = _mm_and_ps(v2, vFFF0fMask); // x2 y2 z2 0
+
+			vT = _mm_unpackhi_ps(v0, v1); // z0 z1 * *
+			v0 = _mm_unpacklo_ps(v0, v1); // x0 x1 y0 y1
+
+			v1 = _mm_shuffle_ps(v0, v2, _MM_SHUFFLE(2, 3, 1, 3));
+			v0 = _mm_shuffle_ps(v0, v2, _MM_SHUFFLE(0, 1, 0, 3));
+			v2 = _mm_castpd_ps(_mm_move_sd(_mm_castps_pd(v2), _mm_castps_pd(vT)));
+
+			return Matrix3x3(v0, v1, v2);
+#else
+			return Matrix3x3(m_el[0].x(), m_el[1].x(), m_el[2].x(),
+				m_el[0].y(), m_el[1].y(), m_el[2].y(),
+				m_el[0].z(), m_el[1].z(), m_el[2].z());
+#endif
+		}
+		__forceinline Matrix3x3 absolute() const {
+#if defined(AYA_USE_SIMD)
+			return Matrix3x3( _mm_and_ps(m_el[0].m_val128, vAbsfMask),
+				_mm_and_ps(m_el[1].m_val128, vAbsfMask),
+				_mm_and_ps(m_el[2].m_val128, vAbsfMask));
+#else
+			return Matrix3x3(
+				std::abs(m_el[0].x()), std::abs(m_el[0].y()), std::abs(m_el[0].z()),
+				std::abs(m_el[1].x()), std::abs(m_el[1].y()), std::abs(m_el[1].z()),
+				std::abs(m_el[2].x()), std::abs(m_el[2].y()), std::abs(m_el[2].z()));
+#endif
+		}
+		__forceinline Matrix3x3 adjoin() const {
+			return Matrix3x3(cofac(1, 1, 2, 2), cofac(0, 2, 2, 1), cofac(0, 1, 1, 2),
+				cofac(1, 2, 2, 0), cofac(0, 0, 2, 2), cofac(0, 2, 1, 0),
+				cofac(1, 0, 2, 1), cofac(0, 1, 2, 0), cofac(0, 0, 1, 1));
+		}
+		__forceinline Matrix3x3 inverse() const {
+			BaseVector3 co(cofac(1, 1, 2, 2), cofac(1, 2, 2, 0), cofac(1, 0, 2, 1));
+			float det = (*this)[0].dot(co);
+
+			assert(det != 0.f);
+
+			float s = 1.f / det;
+			return Matrix3x3(co.x() * s, cofac(0, 2, 2, 1) * s, cofac(0, 1, 1, 2) * s,
+				co.y() * s, cofac(0, 0, 2, 2) * s, cofac(0, 2, 1, 0) * s,
+				co.z() * s, cofac(0, 1, 2, 0) * s, cofac(0, 0, 1, 1) * s);
+		}
+
+		__forceinline bool operator == (const Matrix3x3 &m) const {
+#if defined(AYA_USE_SIMD)
+			__m128 c0 = _mm_cmpeq_ps(m_el[0].m_val128, m[0].m_val128);
+			__m128 c1 = _mm_cmpeq_ps(m_el[1].m_val128, m[1].m_val128);
+			__m128 c2 = _mm_cmpeq_ps(m_el[2].m_val128, m[2].m_val128);
+
+			c0 = _mm_and_ps(c0, c1);
+			c0 = _mm_and_ps(c0, c2);
+
+			return (0x7 == (_mm_movemask_ps((__m128)c0) & 0x7));
+#else
+			return (m_el[0][0] == m[0][0] && m_el[1][0] == m[1][0] && m_el[2][0] == m[2][0] &&
+				m_el[0][1] == m[0][1] && m_el[1][1] == m[1][1] && m_el[2][1] == m[2][1] &&
+				m_el[0][2] == m[0][2] && m_el[1][2] == m[1][2] && m_el[2][2] == m[2][2]);
+#endif
+		}
+		__forceinline bool operator != (const Matrix3x3 &m) const {
+			return !((*this) == m);
 		}
 
 		__forceinline float tdotx(const BaseVector3 &v) const {
