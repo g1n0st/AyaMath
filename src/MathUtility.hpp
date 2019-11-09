@@ -12,7 +12,7 @@
 #include <intrin.h>
 #endif
 
-#define AYA_USE_SIMD
+//#define AYA_USE_SIMD
 #define AYA_USE_SQRT_APPROXIMATION
 #define SIMD_EPSILON FLT_EPSILON
 

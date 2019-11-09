@@ -9,6 +9,8 @@
 #define splat_ps(_a, _i) pshufd_ps((_a), SHUFFLE(_i, _i, _i, _i))
 #define vFFF0Mask (_mm_set_epi32(0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF))
 #define vFFF0fMask _mm_castsi128_ps(vFFF0Mask)
+#define splat3_ps(_a, _i) pshufd_ps((_a), SHUFFLE(_i, _i, _i, 3))
+#define splat_ps(_a, _i) pshufd_ps((_a), SHUFFLE(_i, _i, _i, _i))
 #endif
 
 namespace Aya {
@@ -192,7 +194,7 @@ namespace Aya {
 #endif
 			
 		}
-		__forceinline friend BaseVector3 operator * (float s, const BaseVector3 &v) {
+		__forceinline friend BaseVector3 operator * (const float &s, const BaseVector3 &v) {
 			return v * s;
 		}
 		__forceinline BaseVector3 & operator *= (const float &s) {
