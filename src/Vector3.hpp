@@ -365,7 +365,7 @@ namespace Aya {
 			return (o + X * std::cos(angle) + Y * std::sin(angle));
 #endif
 		}
-		__forceinline BaseVector3 dot3(const BaseVector3 &v0, const BaseVector3 &v1, const BaseVector3 &v2) {
+		__forceinline BaseVector3 dot3(const BaseVector3 &v0, const BaseVector3 &v1, const BaseVector3 &v2) const{
 #if defined(AYA_USE_SIMD)
 			__m128 a0 = _mm_mul_ps(v0.m_val128, m_val128);
 			__m128 a1 = _mm_mul_ps(v1.m_val128, m_val128);
@@ -380,6 +380,9 @@ namespace Aya {
 #else
 			return BaseVector3(dot(v0), dot(v1), dot(v2));
 #endif
+		}
+		__forceinline BaseVector3 mul(const Matrix3x3 &m) const {
+			return dot3(m[0], m[1], m[2]);
 		}
 
 		friend inline std::ostream &operator<<(std::ostream &os, const BaseVector3 &v) {
