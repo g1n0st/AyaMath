@@ -1,5 +1,5 @@
-#ifndef AYA_MATRIX4X4_HPP
-#define AYA_MATRIX4X4_HPP
+#ifndef AYA_MATRIX3X3_HPP
+#define AYA_MATRIX3X3_HPP
 
 #include "Vector3.hpp"
 #include <stdio.h>
