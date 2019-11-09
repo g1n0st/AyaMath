@@ -5,7 +5,9 @@
 
 #if defined(AYA_USE_SIMD)
 /* expands to the following value */
+#ifndef _MM_SHUFFLE
 #define _MM_SHUFFLE(x, y, z, w) (((w) << 6 | (z) << 4 | (y) << 2 | (x)) & 0xff)
+#endif
 
 #define _mm_pshufd_ps(_a, _mask) _mm_shuffle_ps((_a), (_a), (_mask))
 #define _mm_splat_ps(_a, _i) _mm_pshufd_ps((_a), _MM_SHUFFLE(_i, _i, _i, _i))
@@ -361,6 +363,22 @@ namespace Aya {
 			BaseVector3 Y = axis.cross(*this);
 
 			return (o + X * std::cos(angle) + Y * std::sin(angle));
+#endif
+		}
+		__forceinline BaseVector3 dot3(const BaseVector3 &v0, const BaseVector3 &v1, const BaseVector3 &v2) {
+#if defined(AYA_USE_SIMD)
+			__m128 a0 = _mm_mul_ps(v0.m_val128, m_val128);
+			__m128 a1 = _mm_mul_ps(v1.m_val128, m_val128);
+			__m128 a2 = _mm_mul_ps(v2.m_val128, m_val128);
+			__m128 b0 = _mm_unpacklo_ps(a0, a1);
+			__m128 b1 = _mm_unpackhi_ps(a0, a1);
+			__m128 b2 = _mm_unpacklo_ps(a2, _mm_setzero_ps());
+			__m128 r = _mm_add_ps(_mm_movelh_ps(b0, b2), _mm_movehl_ps(b2, b0));
+			a2 = _mm_and_ps(a2, vxyzMaskf);
+			r = _mm_add_ps(r, _mm_castpd_ps(_mm_move_sd(_mm_castps_pd(a2), _mm_castps_pd(b1))));
+			return BaseVector3(r);
+#else
+			return BaseVector3(dot(v0), dot(v1), dot(v2));
 #endif
 		}
 
