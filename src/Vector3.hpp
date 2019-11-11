@@ -15,10 +15,15 @@
 
 #define vFFF0Mask (_mm_set_epi32(0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF))
 #define vFFF0fMask _mm_castsi128_ps(vFFF0Mask)
+#define vFF0FMask (_mm_set_epi32(0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF))
+#define vFF0FfMask _mm_castsi128_ps(vFF0FMask)
+#define vF0FFMask (_mm_set_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF))
+#define vF0FFfMask _mm_castsi128_ps(vF0FFMask)
+#define v0FFFMask (_mm_set_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000))
+#define v0FFFfMask _mm_castsi128_ps(v0FFFMask)
 
 #define v3AbsiMask (_mm_set_epi32(0x00000000, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF))
 #define vAbsMask (_mm_set_epi32(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF))
-#define vFFF0Mask (_mm_set_epi32(0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF))
 
 #define vxyzMaskf vFFF0fMask
 #define vAbsfMask _mm_castsi128_ps(vAbsMask)
