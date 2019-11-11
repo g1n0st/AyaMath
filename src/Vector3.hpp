@@ -381,9 +381,6 @@ namespace Aya {
 			return BaseVector3(dot(v0), dot(v1), dot(v2));
 #endif
 		}
-		__forceinline BaseVector3 mul(const Matrix3x3 &m) const {
-			return dot3(m[0], m[1], m[2]);
-		}
 
 		friend inline std::ostream &operator<<(std::ostream &os, const BaseVector3 &v) {
 			os << "[ "  << AYA_SCALAR_OUTPUT(v.m_val[0])

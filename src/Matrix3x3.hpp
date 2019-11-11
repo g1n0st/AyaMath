@@ -398,6 +398,31 @@ namespace Aya {
 #endif
 			return *this;
 		}
+		__forceinline BaseVector3 operator * (const BaseVector3 &v) {
+#if defined(AYA_USE_SIMD)
+			return v.dot3(m_el[0], m_el[1], m_el[2]);
+#else
+			return BaseVector3(m_el[0].dot(v), m_el[1].dot(v), m_el[2].dot(v));
+#endif
+		}
+		friend __forceinline BaseVector3 operator * (const BaseVector3 &v, const Matrix3x3 &m) {
+#if defined(AYA_USE_SIMD)
+			const __m128 vv = v.m_val128;
+
+			__m128 c0 = _mm_splat_ps(vv, 0);
+			__m128 c1 = _mm_splat_ps(vv, 1);
+			__m128 c2 = _mm_splat_ps(vv, 2);
+
+			c0 = _mm_mul_ps(c0, _mm_and_ps(m[0].m_val128, vFFF0fMask));
+			c1 = _mm_mul_ps(c1, _mm_and_ps(m[1].m_val128, vFFF0fMask));
+			c0 = _mm_add_ps(c0, c1);
+			c2 = _mm_mul_ps(c2, _mm_and_ps(m[2].m_val128, vFFF0fMask));
+
+			return BaseVector3(_mm_add_ps(c0, c2));
+#else
+			return BaseVector3(m.tdotx(v), m.tdoty(v), m.tdotz(v));
+#endif
+		}
 
 		__forceinline Matrix3x3 transpose() const {
 #if defined(AYA_USE_SIMD)
