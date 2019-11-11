@@ -398,7 +398,7 @@ namespace Aya {
 #endif
 			return *this;
 		}
-		__forceinline BaseVector3 operator * (const BaseVector3 &v) {
+		__forceinline BaseVector3 operator * (const BaseVector3 &v) const {
 #if defined(AYA_USE_SIMD)
 			return v.dot3(m_el[0], m_el[1], m_el[2]);
 #else

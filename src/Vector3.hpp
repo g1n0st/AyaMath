@@ -5,9 +5,9 @@
 
 #if defined(AYA_USE_SIMD)
 /* expands to the following value */
-#ifndef _MM_SHUFFLE
+//#ifndef _MM_SHUFFLE
 #define _MM_SHUFFLE(x, y, z, w) (((w) << 6 | (z) << 4 | (y) << 2 | (x)) & 0xff)
-#endif
+//#endif
 
 #define _mm_pshufd_ps(_a, _mask) _mm_shuffle_ps((_a), (_a), (_mask))
 #define _mm_splat_ps(_a, _i) _mm_pshufd_ps((_a), _MM_SHUFFLE(_i, _i, _i, _i))
