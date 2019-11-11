@@ -1,6 +1,10 @@
 #ifndef AYA_MATHUTILITY_HPP
 #define AYA_MATHUTILITY_HPP
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <cmath>
+
 #define AYA_DEBUG
 #if defined(AYA_DEBUG)
 #include <assert.h>
@@ -45,6 +49,13 @@ namespace Aya {
 	template<class T>
 	__forceinline void SetMin(T &a, const T &b) {
 		if (b < a) a = b;
+	}
+
+	__forceinline float Radian(const float &deg) {
+		return (float)(M_PI / 180.f) * deg;
+	}
+	__forceinline float Degree(const float &rad) {
+		return (float)(180.f / M_PI) * rad;
 	}
 
 	__forceinline float RSqrt(const float &x)
