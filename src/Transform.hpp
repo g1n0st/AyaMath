@@ -154,7 +154,8 @@ namespace Aya {
 			m_trans = pos;
 
 			Vector3 dir = (look - pos).normalize();
-			Vector3 left = u.normalize.cross(dir).normalize();
+			Vector3 left = u;
+			left.normalize().cross(dir).normalize();
 			Vector3 up = dir.cross(left);
 
 			Matrix3x3 cam_to_world(left, up, dir);
