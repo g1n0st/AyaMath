@@ -150,6 +150,19 @@ namespace Aya {
 		__forceinline Transform& setEulerYPR(const float &yaw, const float &pitch, const float &roll) {
 			return setEulerZYX(roll, pitch, yaw);
 		}
+		__forceinline Transform& setLookAt(const Point3 &pos, const Point3 &look, const Vector3 &u) {
+			m_trans = pos;
+
+			Vector3 dir = (look - pos).normalize();
+			Vector3 left = u.normalize.cross(dir).normalize();
+			Vector3 up = dir.cross(left);
+
+			Matrix3x3 cam_to_world(left, up, dir);
+			m_mat = cam_to_world.inverse();
+			m_inv = cam_to_world;
+
+			return *this;
+		}
 
 		__forceinline Vector3 operator() (Vector3 v) const {
 			return m_mat * v;
