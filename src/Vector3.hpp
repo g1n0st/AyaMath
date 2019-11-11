@@ -269,6 +269,13 @@ namespace Aya {
 			if (d > SIMD_EPSILON) return Sqrt(d);
 			return 0.f;
 		}
+		__forceinline float distance2(const BaseVector3 &p) const {
+			return (p - (*this)).length2();
+		}
+		__forceinline float distance(const BaseVector3 &p) const {
+			return (p - (*this)).length();
+		}
+
 		__forceinline BaseVector3& normalize() {
 #if defined(AYA_USE_SIMD)
 			__m128 vd = _mm_mul_ps(m_val128, m_val128);
