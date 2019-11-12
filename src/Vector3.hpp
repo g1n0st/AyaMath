@@ -27,6 +27,7 @@
 
 #define vxyzMaskf vFFF0fMask
 #define vAbsfMask _mm_castsi128_ps(vAbsMask)
+#define vMzeroMask (_mm_set_ps(-0.0f, -0.0f, -0.0f, -0.0f))
 
 #endif
 
@@ -59,7 +60,7 @@ namespace Aya {
 	private:
 #if defined(AYA_DEBUG)
 		__forceinline void numericValid(int x) {
-			assert(!isnan(m_val[0]) && !isnan(m_val[1]) && !isnan(m_val[2]));
+			assert(!std::isnan(m_val[0]) && !std::isnan(m_val[1]) && !std::isnan(m_val[2]));
 		}
 #else
 #define numericValid
@@ -197,7 +198,12 @@ namespace Aya {
 			return *this;
 		}
 		__forceinline BaseVector3 operator- () const {
+#if defined(AYA_USE_SIMD)
+			__m128 r = _mm_xor_ps(m_val128, vMzeroMask);
+			return BaseVector3(_mm_and_ps(r, vFFF0fMask));
+#else
 			return BaseVector3(-m_val[0], -m_val[1], -m_val[2]);
+#endif
 		}
 		__forceinline BaseVector3 operator * (const float &s) const {
 #if defined(AYA_USE_SIMD)
