@@ -58,6 +58,11 @@ namespace Aya {
 		return (float)(180.f / M_PI) * rad;
 	}
 
+	template<class T>
+	__forceinline float Lerp(const float &t, const T &a, const T &b) {
+		return t * a + (1 - t) * b;
+	}
+
 	__forceinline float RSqrt(const float &x)
 	{
 #if defined(AYA_USE_SIMD) && defined(AYA_USE_SQRT_APPROXIMATION)

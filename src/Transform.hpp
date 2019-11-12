@@ -2,6 +2,7 @@
 #define AYA_TRANSFORM_HPP
 
 #include "Matrix3x3.hpp"
+#include "BBox.hpp"
 
 namespace Aya {
 	__declspec(align(16)) class Transform {
@@ -168,11 +169,52 @@ namespace Aya {
 		__forceinline Vector3 operator() (Vector3 v) const {
 			return m_mat * v;
 		}
-		__forceinline Point3 operator() (Point3 v) const {
-			return m_mat * v + m_trans;
+		__forceinline Point3 operator() (Point3 p) const {
+			return m_mat * p + m_trans;
 		}
-		__forceinline Normal3 operator() (Normal3 v) const {
-			return m_inv.transpose() * v;
+		__forceinline Normal3 operator() (Normal3 n) const {
+			return m_inv.transpose() * n;
+		}
+		__forceinline BBox operator() (BBox b) const {
+
+			// const Transform &M = *this;
+			// BBox ret(M(Point3(b.m_pmin.x(), b.m_pmin.y(), b.m_pmin.z())));
+			// ret.unity(M(Point3(b.m_pmax.x(), b.m_pmin.y(), b.m_pmin.z())));
+			// ret.unity(M(Point3(b.m_pmin.x(), b.m_pmax.y(), b.m_pmin.z())));
+			// ret.unity(M(Point3(b.m_pmin.x(), b.m_pmin.y(), b.m_pmax.z())));
+			// ret.unity(M(Point3(b.m_pmin.x(), b.m_pmax.y(), b.m_pmax.z())));
+			// ret.unity(M(Point3(b.m_pmax.x(), b.m_pmax.y(), b.m_pmin.z())));
+			// ret.unity(M(Point3(b.m_pmax.x(), b.m_pmin.y(), b.m_pmax.z())));
+			// ret.unity(M(Point3(b.m_pmax.x(), b.m_pmax.y(), b.m_pmax.z())));
+			// return ret;
+
+			BBox ret;
+
+			Point3 mid = (b.m_pmax + b.m_pmin) * .5f;
+			Vector3 c = (b.m_pmax - b.m_pmin) * .5f;
+
+			Vector3 x = m_mat.getColumn(0) * c[0];
+			Vector3 y = m_mat.getColumn(1) * c[1];
+			Vector3 z = m_mat.getColumn(2) * c[2];
+			mid = (*this)(mid);
+
+#if defined(AYA_USE_SIMD)
+			x.m_val128 = _mm_and_ps(x.m_val128, vAbsfMask);
+			y.m_val128 = _mm_and_ps(y.m_val128, vAbsfMask);
+			z.m_val128 = _mm_and_ps(z.m_val128, vAbsfMask);
+			x.m_val128 = _mm_add_ps(x.m_val128, y.m_val128);
+			x.m_val128 = _mm_add_ps(x.m_val128, z.m_val128);
+
+			ret.m_pmax = mid + x;
+			ret.m_pmin = mid - x;
+#else
+			Vector3 cro(std::abs(x.x()) + std::abs(y.x()) + std::abs(z.x()),
+				std::abs(x.y()) + std::abs(y.y()) + std::abs(z.y()),
+				std::abs(x.z()) + std::abs(y.z()) + std::abs(z.z()));
+			ret.m_pmax = mid + cro;
+			ret.m_pmin = mid - cro;
+#endif
+			return ret;
 		}
 	};
 }
