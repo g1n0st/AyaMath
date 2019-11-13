@@ -3,6 +3,7 @@
 
 #include "Matrix3x3.hpp"
 #include "BBox.hpp"
+#include "Quaternion.hpp"
 
 namespace Aya {
 	__declspec(align(16)) class Transform {
@@ -24,6 +25,8 @@ namespace Aya {
 			m_mat(m), m_inv(inv), m_trans(t) {}
 		explicit __forceinline Transform(const Matrix3x3& m, const Matrix3x3& inv) :
 			m_mat(m), m_inv(inv), m_trans(Vector3()) {}
+		explicit __forceinline Transform(const Quaternion& q) { setRotation(q); }
+		explicit __forceinline Transform(const Quaternion& q, const BaseVector3 &v) { setRotation(q); m_trans = v; }
 		explicit __forceinline Transform(const Vector3& t) :
 			m_mat(Matrix3x3().getIdentity()), m_inv(Matrix3x3().getIdentity()), m_trans(t) {}
 		__forceinline Transform(const Transform &rhs) :
@@ -127,6 +130,77 @@ namespace Aya {
 			m_trans.setZero();
 
 			return *this;
+		}
+		void setRotation(const Quaternion& q)
+		{
+			float d = q.length2();
+			assert(d != 0.f);
+			float s = 2.f / d;
+
+#if defined(AYA_USE_SIMD)
+			__m128 vs, Q = q.get128();
+			__m128i Qi = _mm_castps_si128(Q);
+			__m128 Y, Z;
+			__m128 V1, V2, V3;
+			__m128 V11, V21, V31;
+			__m128 NQ = _mm_xor_ps(Q, vMzeroMask);
+			__m128i NQi = _mm_castps_si128(NQ);
+
+			V1 = _mm_castsi128_ps(_mm_shuffle_epi32(Qi, _MM_SHUFFLE(1, 0, 2, 3)));  // Y X Z W
+			V2 = _mm_shuffle_ps(NQ, Q, _MM_SHUFFLE(0, 0, 1, 3));                 // -X -X  Y  W
+			V3 = _mm_castsi128_ps(_mm_shuffle_epi32(Qi, _MM_SHUFFLE(2, 1, 0, 3)));  // Z Y X W
+			V1 = _mm_xor_ps(V1, vMPPP);                                         //	change the sign of the first element
+
+			V11 = _mm_castsi128_ps(_mm_shuffle_epi32(Qi, _MM_SHUFFLE(1, 1, 0, 3)));  // Y Y X W
+			V21 = _mm_unpackhi_ps(Q, Q);                                         //  Z  Z  W  W
+			V31 = _mm_shuffle_ps(Q, NQ, _MM_SHUFFLE(0, 2, 0, 3));                 //  X  Z -X -W
+
+			V2 = _mm_mul_ps(V2, V1);   //
+			V1 = _mm_mul_ps(V1, V11);  //
+			V3 = _mm_mul_ps(V3, V31);  //
+
+			V11 = _mm_shuffle_ps(NQ, Q, _MM_SHUFFLE(2, 3, 1, 3));                //	-Z -W  Y  W
+			V11 = _mm_mul_ps(V11, V21);                                                    //
+			V21 = _mm_xor_ps(V21, vMPPP);                                       //	change the sign of the first element
+			V31 = _mm_shuffle_ps(Q, NQ, _MM_SHUFFLE(3, 3, 1, 3));                //	 W  W -Y -W
+			V31 = _mm_xor_ps(V31, vMPPP);                                       //	change the sign of the first element
+			Y = _mm_castsi128_ps(_mm_shuffle_epi32(NQi, _MM_SHUFFLE(3, 2, 0, 3)));  // -W -Z -X -W
+			Z = _mm_castsi128_ps(_mm_shuffle_epi32(Qi, _MM_SHUFFLE(1, 0, 1, 3)));   //  Y  X  Y  W
+
+			vs = _mm_load_ss(&s);
+			V21 = _mm_mul_ps(V21, Y);
+			V31 = _mm_mul_ps(V31, Z);
+
+			V1 = _mm_add_ps(V1, V11);
+			V2 = _mm_add_ps(V2, V21);
+			V3 = _mm_add_ps(V3, V31);
+
+			vs = _mm_splat3_ps(vs, 0);
+			//	s ready
+			V1 = _mm_mul_ps(V1, vs);
+			V2 = _mm_mul_ps(V2, vs);
+			V3 = _mm_mul_ps(V3, vs);
+
+			V1 = _mm_add_ps(V1, v1000);
+			V2 = _mm_add_ps(V2, v0100);
+			V3 = _mm_add_ps(V3, v0010);
+
+			m_mat[0] = V1;
+			m_mat[1] = V2;
+			m_mat[2] = V3;
+#else
+			float xs = q.x() * s, ys = q.y() * s, zs = q.z() * s;
+			float wx = q.w() * xs, wy = q.w() * ys, wz = q.w() * zs;
+			float xx = q.x() * xs, xy = q.x() * ys, xz = q.x() * zs;
+			float yy = q.y() * ys, yz = q.y() * zs, zz = q.z() * zs;
+
+			m_mat.setValue(
+				1.f - (yy + zz), xy - wz, xz + wy,
+				xy + wz, 1.f - (xx + zz), yz - wx,
+				xz - wy, yz + wx, 1.f - (xx + yy));
+#endif
+			m_inv = m_mat.transpose();
+			m_trans.setZero();
 		}
 		__forceinline Transform& setEulerZYX(const float &e_x, const float &e_y, const float &e_z) {
 			float ci(std::cosf(e_x));
