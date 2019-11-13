@@ -114,7 +114,7 @@ namespace Aya {
 
 			return *this;
 		}
-		__forceinline Transform& setRotation(const float &angle, const Vector3 &axis) {
+		__forceinline Transform& setRotation(const Vector3 &axis, const float &angle) {
 			Vector3 a = axis;
 			a.normalize();
 			float x = a.x();
@@ -289,6 +289,13 @@ namespace Aya {
 			ret.m_pmin = mid - cro;
 #endif
 			return ret;
+		}
+
+		friend inline std::ostream &operator<<(std::ostream &os, const Transform &t) {
+			os << t.m_mat << ",\n";
+			os << t.m_inv << ",\n";
+			os << t.m_trans;
+			return os;
 		}
 	};
 }
