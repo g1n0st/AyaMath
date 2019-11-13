@@ -4,6 +4,7 @@
 #include "MathUtility.hpp"
 #include "Vector3.hpp"
 
+#define AYA_EULER_DEFAULT_ZYX
 #if defined (AYA_USE_SIMD)
 #define vOnes (_mm_set_ps(1.0f, 1.0f, 1.0f, 1.0f))
 #define vQInv (_mm_set_ps(+0.0f, -0.0f, -0.0f, -0.0f))
@@ -468,7 +469,7 @@ namespace Aya {
 			__m128 vd = _mm_mul_ps(m_val128, q.m_val128);
 
 			__m128 t = _mm_movehl_ps(vd, vd);
-			vd = _mm_and_ps(vd, t);
+			vd = _mm_add_ps(vd, t);
 			t = _mm_shuffle_ps(vd, vd, 0x55);
 			vd = _mm_add_ss(vd, t);
 
@@ -491,12 +492,6 @@ namespace Aya {
 			float d = length2();
 			if (d > SIMD_EPSILON) return Sqrt(d);
 			return 0.f;
-		}
-		__forceinline float distance2(const Quaternion &p) const {
-			return (p - (*this)).length2();
-		}
-		__forceinline float distance(const Quaternion &p) const {
-			return (p - (*this)).length();
 		}
 
 		__forceinline Quaternion& normalize() {
@@ -575,6 +570,15 @@ namespace Aya {
 			{
 				return *this;
 			}
+		}
+
+		friend inline std::ostream &operator<<(std::ostream &os, const Quaternion &v) {
+			os << "[ " << AYA_SCALAR_OUTPUT(v.m_val[0])
+				<< ", " << AYA_SCALAR_OUTPUT(v.m_val[1])
+				<< ", " << AYA_SCALAR_OUTPUT(v.m_val[2])
+				<< ", " << AYA_SCALAR_OUTPUT(v.m_val[3])
+				<< " ]";
+			return os;
 		}
 	};
 }
